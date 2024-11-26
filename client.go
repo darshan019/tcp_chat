@@ -50,6 +50,18 @@ func (cl *client) readInput() {
 				client: cl,
 				args:   args,
 			}
+		case "/msgp":
+			cl.commands <- command{
+				id:     CMD_MSGP,
+				client: cl,
+				args:   args,
+			}
+		case "/mems":
+			cl.commands <- command{
+				id:     CMD_MEMS,
+				client: cl,
+				args:   args,
+			}
 		case "/quit":
 			cl.commands <- command{
 				id:     CMD_QUIT,

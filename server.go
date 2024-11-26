@@ -20,6 +20,10 @@ func (s *server) run() {
 			s.nick(cmd.client, cmd.args)
 		case CMD_MSG:
 			s.msg(cmd.client, cmd.args)
+		case CMD_MSGP:
+			s.msgTo(cmd.client, cmd.args)
+		case CMD_MEMS:
+			s.mems(cmd.client)
 		case CMD_ROOMS:
 			s.listOfRooms(cmd.client)
 		case CMD_QUIT:
@@ -97,6 +101,26 @@ func (s *server) quit(c *client) {
 	c.conn.Close()
 }
 
+func (s *server) mems(c *client) {
+	if c.room == nil {
+		c.err(errors.New("join a room first"))
+		return
+	}
+
+	var membersList strings.Builder
+	membersList.WriteString("Members in the room:\n")
+
+	for _, names := range c.room.members {
+		membersList.WriteString(names.nick + "\n")
+	}
+
+	if membersList.Len() == 0 {
+		c.msg("No other members in the room.")
+	} else {
+		c.msg(membersList.String())
+	}
+}
+
 func (s *server) msg(c *client, args []string) {
 	if c.room == nil {
 		c.err(errors.New("join a room first"))
@@ -104,4 +128,32 @@ func (s *server) msg(c *client, args []string) {
 	}
 
 	c.room.broadCast(c, c.nick+": "+strings.Join(args[1:], " "))
+}
+
+func (s *server) msgTo(c *client, args []string) {
+	if c.room == nil {
+		c.err(errors.New("join a room first"))
+		return
+	}
+	if len(args) < 2 {
+		c.msg("Please specify a user to send the message to.")
+		return
+	}
+
+	var reciever string = args[1]
+	var sendTo *client
+
+	for _, names := range c.room.members {
+		if names.nick == reciever {
+			sendTo = names
+			break
+		}
+	}
+
+	if sendTo == nil {
+		c.msg("User is not online")
+		return
+	} else {
+		sendTo.msg(c.nick + ": " + strings.Join(args[2:], " "))
+	}
 }

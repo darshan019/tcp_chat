@@ -8,6 +8,8 @@ const (
 	CMD_ROOMS
 	CMD_MSG
 	CMD_QUIT
+	CMD_MSGP
+	CMD_MEMS
 )
 
 type command struct {
